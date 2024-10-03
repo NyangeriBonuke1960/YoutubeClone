@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express"
 import bcrypt from 'bcrypt'
 import userUsecase from "../usecases/userUsecase"
+import { getAccessToken } from '../utils/jwt'
+import { Document } from "mongoose"
 
 interface SignupRequestBody{
     name: string,
@@ -12,6 +14,21 @@ interface LoginRequestBody{
     email: string,
     password: string
 }
+
+interface User extends Document {
+    _id: string;
+    name: string;
+    email: string;
+    password: string; // Consider removing this from the interface for security
+    subscribers: string[];
+    subscriptions: string[];
+    likedVideos: string[];
+    dislikedVideos: string[];
+    createdAt: Date; // Change to Date type if applicable
+    updatedAt: Date; // Change to Date type if applicable
+    __v?: number; // Optional if it might not be present
+  }
+  
 
 class UserController{
     async signup(req: Request, res: Response){
@@ -33,6 +50,7 @@ class UserController{
             const hashedPassword = await bcrypt.hash(password, salt)
 
             const user = await userUsecase.createUser({name, email, password: hashedPassword})
+        
             res.status(201).json(user)
         }
         catch(error){
