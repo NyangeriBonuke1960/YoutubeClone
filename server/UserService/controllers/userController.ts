@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from "express"
+import { Request, Response } from "express"
 import bcrypt from 'bcrypt'
 import userUsecase from "../usecases/userUsecase"
-import { getAccessToken } from '../utils/jwt'
-import { Document } from "mongoose"
+import { getAccessToken, getRefreshToken } from '../utils/jwt'
+import { ObjectId } from "mongoose"
 
 interface SignupRequestBody{
     name: string,
@@ -14,24 +14,10 @@ interface LoginRequestBody{
     email: string,
     password: string
 }
-
-interface User extends Document {
-    _id: string;
-    name: string;
-    email: string;
-    password: string; // Consider removing this from the interface for security
-    subscribers: string[];
-    subscriptions: string[];
-    likedVideos: string[];
-    dislikedVideos: string[];
-    createdAt: Date; // Change to Date type if applicable
-    updatedAt: Date; // Change to Date type if applicable
-    __v?: number; // Optional if it might not be present
-  }
   
 
 class UserController{
-    async signup(req: Request, res: Response){
+    async signup(req: Request, res: Response): Promise<void>{
         try{
             const {name, email, password} = req.body as SignupRequestBody
 
@@ -44,21 +30,23 @@ class UserController{
 
             if(isUser){
                 res.status(400).json('User already exists')
+                return
             }
 
             const salt = await bcrypt.genSalt(10)
             const hashedPassword = await bcrypt.hash(password, salt)
 
             const user = await userUsecase.createUser({name, email, password: hashedPassword})
-        
-            res.status(201).json(user)
+            const accessToken: string = getAccessToken((user._id as ObjectId).toString())
+            const refreshToken: string = getRefreshToken((user._id as ObjectId).toString())
+            res.status(201).json({user, accessToken, refreshToken})
         }
         catch(error){
             res.status(500).json(error)
         }
     }
 
-    async login(req: Request, res: Response){
+    async login(req: Request, res: Response): Promise<void>{
         try{
             const { email, password } = req.body as LoginRequestBody
             if(!email || !password){
@@ -78,7 +66,10 @@ class UserController{
                 return
             }
 
-            res.status(201).json(user)
+            console.log((user._id as ObjectId).toString())
+            const accessToken: string = getAccessToken((user._id as ObjectId).toString())
+            const refreshToken: string = getRefreshToken((user._id as ObjectId).toString())
+            res.status(201).json({user, accessToken, refreshToken})
         }
         catch(error){
             res.status(500).json(error)
