@@ -36,6 +36,16 @@ class UserUseCase{
             throw error
         }
     }
+
+    async deleteUserById(id: string){
+        try{
+            const user = await User.findByIdAndDelete(id)
+            return user
+        }
+        catch(error){
+            throw error
+        }
+    }
 }
 
 export default new UserUseCase

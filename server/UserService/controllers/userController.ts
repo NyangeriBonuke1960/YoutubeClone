@@ -66,10 +66,20 @@ class UserController{
                 return
             }
 
-            console.log((user._id as ObjectId).toString())
             const accessToken: string = getAccessToken((user._id as ObjectId).toString())
             const refreshToken: string = getRefreshToken((user._id as ObjectId).toString())
             res.status(201).json({user, accessToken, refreshToken})
+        }
+        catch(error){
+            res.status(500).json(error)
+        }
+    }
+
+    async deleteAccount(req: Request, res: Response){
+        const { id } = req.params
+        try{
+            await userUsecase.deleteUserById(id)
+            res.status(200).json('User deleted')
         }
         catch(error){
             res.status(500).json(error)

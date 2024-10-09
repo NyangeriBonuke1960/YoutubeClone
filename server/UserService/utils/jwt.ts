@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { Request, Response, NextFunction } from 'express'
-import { error } from 'console'
 dotenv.config()
 
 const accessToken: string | undefined = process.env.ACCESS_TOKEN
@@ -14,27 +13,30 @@ const getAccessToken = (id: string): string => {
     return jwt.sign({id: id}, accessToken, {expiresIn: '30m'})
 }
 
-const verifyAccessToken = (req: Request, res: Response, next: NextFunction)=> {
+const verifyAccessToken = (req: Request, res: Response, next: NextFunction): void =>  {
     const authHeader = req.headers['authorization']
 
     if(!authHeader){
-        return res.status(400).json({error: 'No authorization header provided'})
+        res.status(400).json({error: 'No authorization header provided'})
+        return
     }
 
     const token = authHeader.split(' ')[1]
     if(!token){
-        return res.status(400).json({error: 'No token provided'})
+        res.status(400).json({error: 'No token provided'})
+        return
     }
 
     if(!accessToken){
-        return res.status(500).json({error: 'Invalid accessToken'})
+        res.status(500).json({error: 'Invalid accessToken'})
+        return
     }
 
     jwt.verify(token, accessToken, (err, decoded) => {
         if(err){
-            return {error: 'Invalid or expired token'}
+            res.status(400).json({error: 'Invalid or expired token'})
+            return
         }
-        req.body = decoded
         next()
     })
 }
