@@ -1,3 +1,4 @@
 .env
 pacakge-lock.json
 node_modules
+db.ts
