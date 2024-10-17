@@ -14,7 +14,46 @@ class VideoUseCase{
             return video
         }
         catch(error){
-            throw error 
+            throw error
+        }
+   }
+
+   async updateVid(id: string, updateFields: object){
+        try{
+            const video = await Video.findByIdAndUpdate(id, {$set: updateFields}, {new: true})
+            if(!video){
+                throw new Error('Video not found')
+            }
+            return video
+        }
+        catch(error){
+            throw error
+        }
+   }
+
+   async deleteVid(id: string){
+        try{
+            const video = await Video.findByIdAndDelete(id)
+            if(!video){
+                throw new Error('Video does not exist')
+            }
+            return video
+        }
+        catch(error){
+            throw error
+        }
+   }
+
+   async findVid(id: string){
+        try{
+            const video = await Video.findById(id)
+            if(!video){
+                throw new Error('Video does not exist')
+            }
+            return video
+        }
+        catch(error){
+            throw error
         }
    }
 }

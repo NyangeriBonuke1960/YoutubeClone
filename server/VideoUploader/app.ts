@@ -14,6 +14,10 @@ app.use(express.json())
 
 app.use('/api', router)
 
+app.post('/hello', (req, res) => {
+    res.status(200).json('Hello')
+})
+
 app.listen(port, () => {
     console.log('Server started')
 })
